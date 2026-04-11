@@ -5746,7 +5746,7 @@ to define the log format:
 JSON log format
 ===============
 
-Starting with NGINX Unit 1.34.0, **format** can instead be an object
+Starting with version 1.34.0, **format** can instead be an object
 describing JSON field name/value pairs, for example,
 
 .. code-block:: json

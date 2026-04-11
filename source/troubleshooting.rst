@@ -418,7 +418,7 @@ Getting Support
    * - Security alerts
      - Please report security issues to
        `security-alert@nginx.org <security-alert@nginx.org>`__,
-       specifically mentioning NGINX Unit in the subject
+       specifically mentioning FreeUnit in the subject
        and following the
        `CVSS v3.1 <https://www.first.org/cvss/v3.1/specification-document>`_
        specification.

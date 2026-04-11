@@ -40,7 +40,7 @@ the app:
 .. code-block:: yaml
 
    ---
-   - name: Install and run NGINX Unit
+   - name: Install and run FreeUnit
      hosts: unit_hosts
      become: true
 
@@ -89,7 +89,7 @@ With everything in place, start the playbook:
 
    $ ansible-playbook -i :nxt_hint:`inventory.yaml <Inventory filename>` :nxt_hint:`playbook.yaml <Playbook filename>`
 
-         PLAY [Install and run NGINX Unit] ***
+         PLAY [Install and run FreeUnit] ***
 
          ...
 

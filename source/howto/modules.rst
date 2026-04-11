@@ -221,7 +221,7 @@ adjust the command samples as needed to fit your scenario.
             Comment3: Specify Unit's package version to avoid issues when Unit updates
             Comment4: Again, run 'apt show unit | grep Version' to get this value
             Maintainer: Jane Doe <j.doe@example.com>
-            Description: Custom PHP 7.3 language module for NGINX Unit |version|
+            Description: Custom PHP 7.3 language module for FreeUnit |version|
 
          Save and close the file.
 
@@ -294,7 +294,7 @@ adjust the command samples as needed to fit your scenario.
             Version:        |version|
             # Use Unit's package version for consistency: 'yum info unit | grep Version'
             Release:        1%{?dist}
-            Summary:        Custom language module for NGINX Unit
+            Summary:        Custom language module for FreeUnit
 
             License:        ASL 2.0
             # Unit uses ASL 2.0; your license depends on the language you are packaging
@@ -310,7 +310,7 @@ adjust the command samples as needed to fit your scenario.
             Requires:       php-embedded
 
             %description
-            Custom language module for NGINX Unit |version| (https://unit.nginx.org).
+            Custom language module for FreeUnit |version| (https://unit.nginx.org).
 
             Maintainer: Jane Doe <j.doe@example.com>
 
