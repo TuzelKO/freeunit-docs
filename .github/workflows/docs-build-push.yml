@@ -58,6 +58,7 @@ jobs:
       - name: Validate environment
         run: |
           if [[ -z "${DEPLOYMENT_ENV}" ]]; then
+            DEPLOYMENT_ENV=preview
             echo "DEPLOYMENT_ENV=preview" >> "$GITHUB_ENV"
           fi
           if [[ ! "${DEPLOYMENT_ENV}" =~ ^(prod|preview)$ ]]; then
