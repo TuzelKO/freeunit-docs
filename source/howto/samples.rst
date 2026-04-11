@@ -94,7 +94,7 @@ Try this sample out with the Dockerfile :download:`here
        t := make(map[string]interface{})
 
        m["message"] = "Unit reporting"
-       m["agent"] = "NGINX Unit |version|"
+       m["agent"] = "FreeUnit |version|"
 
        body, _ := ioutil.ReadAll(r.Body)
        m["body"] = fmt.Sprintf("%s", body)
@@ -179,7 +179,7 @@ need to `download <https://cliftonlabs.github.io/json-simple/>`__ and :ref:`add
    JsonObject r = new JsonObject();
 
    r.put("message", "Unit reporting");
-   r.put("agent", "NGINX Unit |version|");
+   r.put("agent", "FreeUnit |version|");
 
    JsonObject headers = new JsonObject();
    Enumeration h = request.getHeaderNames();
@@ -279,7 +279,7 @@ Try this sample out with the Dockerfile :download:`here
            res.writeHead(200, {"Content-Type": "application/json; charset=utf-8"})
 
            var r = {
-               "agent":    "NGINX Unit |version|",
+               "agent":    "FreeUnit |version|",
                "message":  "Unit reporting"
            }
 
@@ -361,7 +361,7 @@ Try this sample out with the Dockerfile :download:`here
 
        my $r = {
            "message"   => "Unit reporting",
-           "agent"     => "NGINX Unit |version|",
+           "agent"     => "FreeUnit |version|",
            "headers"   => $req->headers->psgi_flatten(),
            "body"      => $req->content,
            "sha256"    => sha256_hex($req->content),
@@ -419,7 +419,7 @@ Try this sample out with the Dockerfile :download:`here
 
    $r = array (
       "message" => "Unit reporting",
-      "agent"   => "NGINX Unit |version|"
+      "agent"   => "FreeUnit |version|"
    );
 
    foreach ($_SERVER as $header => $value)
@@ -487,7 +487,7 @@ Try this sample out with the Dockerfile :download:`here
        r = {}
 
        r["message"] = "Unit reporting"
-       r["agent"] = "NGINX Unit |version|"
+       r["agent"] = "FreeUnit |version|"
 
        r["headers"] = {}
        for header in [_ for _ in env.keys() if _.startswith("HTTP_")]:
@@ -554,7 +554,7 @@ Try this sample out with the Dockerfile :download:`here
        body = env["rack.input"].read
        r = {
            "message" => "Unit reporting",
-           "agent"   => "NGINX Unit |version|",
+           "agent"   => "FreeUnit |version|",
            "body"    => body,
            "headers" => env.select { |key, value| key.include?("HTTP_") },
            "sha256"  => Digest::SHA256.hexdigest(body)

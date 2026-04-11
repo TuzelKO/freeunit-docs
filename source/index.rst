@@ -8,12 +8,7 @@
 Universal web app server
 ########################
 
-.. note::
-
-   NGINX Unit no longer receives new features or
-   enhancements from the project maintainers.
-
-NGINX Unit is a lightweight and versatile application runtime
+FreeUnit is a lightweight and versatile application runtime
 that provides the essential components for your web application
 as a single open-source server:
 running application code
@@ -21,16 +16,13 @@ running application code
 serving static assets,
 handling TLS and request routing.
 
-Unit was created by
-`nginx <https://nginx.org/en/>`_
-team members from scratch
-to be highly efficient
-and fully configurable at runtime.
+FreeUnit is a community-maintained fork of NGINX Unit,
+continued after the original project was archived in October 2025.
 The latest version is |version|,
 released on |release_date|.
 
 - See a quickstart
-  `guide <https://github.com/nginx/unit/>`__
+  `guide <https://github.com/freeunitorg/freeunit/>`__
   on our GitHub page.
 
 - Browse the
@@ -46,9 +38,8 @@ released on |release_date|.
   :doc:`key features <keyfeatures>`
   for further details.
 
-- Peek at our future plans
-  with a GitHub-based
-  `roadmap <https://github.com/orgs/nginx/projects/1>`_.
+- Follow development and future plans on
+  `GitHub <https://github.com/freeunitorg/freeunit/issues>`_.
 
 .. raw:: html
 
@@ -66,6 +57,6 @@ released on |release_date|.
      </div>
    </div>
 
-Watch the entire NGINX Unit tutorial course
+Watch the entire Unit tutorial course
 `here
 <https://www.youtube.com/playlist?list=PLGz_X9w9raXdV3vuPUu0kKBSBjG9rPaUf>`__.

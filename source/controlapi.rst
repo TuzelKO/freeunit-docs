@@ -218,7 +218,7 @@ Suppose you saved this as **/www/data/index.html**:
    <!DOCTYPE html>
    <html>
       <head>
-         <title>Welcome to NGINX Unit!</title>
+         <title>Welcome to FreeUnit!</title>
          <style>
             body {
             width: 35em;
@@ -228,14 +228,14 @@ Suppose you saved this as **/www/data/index.html**:
          </style>
       </head>
       <body>
-         <h1>Welcome to NGINX Unit!</h1>
-         <p>If you see this page, the NGINX Unit web server is successfully
+         <h1>Welcome to FreeUnit!</h1>
+         <p>If you see this page, the FreeUnit web server is successfully
             installed and working.  Further configuration is required.
          </p>
          <p>For online documentation and support, please refer to
             <a href="https://unit.nginx.org/">unit.nginx.org</a>.<br/>
          </p>
-         <p><em>Thank you for using NGINX Unit.</em></p>
+         <p><em>Thank you for using FreeUnit.</em></p>
       </body>
    </html>
 
@@ -295,7 +295,7 @@ from the **share** directory:
          <!DOCTYPE html>
          <html>
             <head>
-               <title>Welcome to NGINX Unit!</title>
+               <title>Welcome to FreeUnit!</title>
                ...
 
 

@@ -1,5 +1,5 @@
  .. meta::
-   :og:description: Upload SSL/TLS certificates to NGINX Unit to use
+   :og:description: Upload SSL/TLS certificates to FreeUnit to use
                     them with your listeners.
 
 .. include:: include/replace.rst

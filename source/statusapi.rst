@@ -1,6 +1,6 @@
  .. meta::
    :og:description: Query global and per-application usage statistics
-                    from NGINX Unit.
+                    from FreeUnit.
 
 .. include:: include/replace.rst
 

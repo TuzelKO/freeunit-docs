@@ -9,7 +9,7 @@
 Installation
 ############
 
-You can install NGINX Unit in four alternative ways:
+You can install FreeUnit in four alternative ways:
 
 - Choose from our official :ref:`binary packages <installation-precomp-pkgs>`
   for a few popular systems.
