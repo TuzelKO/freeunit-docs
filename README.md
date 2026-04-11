@@ -1,33 +1,38 @@
-![NGINX Unit Logo](unitlogo.svg)
+# FreeUnit Documentation
 
-# NGINX Unit Documentation
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![GitHub Discussions](https://img.shields.io/badge/GitHub-discussions-009639)](https://github.com/freeunitorg/freeunit/discussions "GitHub Discussions")
 
-This is the source code for [NGINX Unit](https://github.com/nginx/unit/)'s
-official website, written in
+Source for the [FreeUnit](https://freeunit.org/) documentation website, written in
 [reStructuredText](https://en.wikipedia.org/wiki/ReStructuredText) and built
-with the [Sphinx](https://www.sphinx-doc.org/en/master/) generator.
+with [Sphinx](https://www.sphinx-doc.org/en/master/).
+
+FreeUnit is a community-maintained fork of the NGINX Unit application server
+(archived October 2025).
 
 ## Development
 
-To run a local version of the website:
-
 ```shell
-git clone https://github.com/nginx/unit-docs && cd unit-docs
+git clone https://github.com/freeunitorg/docs && cd docs
 pip install -r requirements.txt
 make serve
 ```
 
-Commits in any branch associated with a Pull Request, if made by a maintainer, will automatically deploy a preview site. A comment with a link to the preview will show up in the PR.
+The site is served locally at `http://localhost:8000`.
 
-## Deployment
-
-See the [`docs-actions` README](https://github.com/nginxinc/docs-actions/tree/main?tab=readme-ov-file#docs-actions).
+Pull requests automatically deploy a preview site when opened by a maintainer.
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue
-first to discuss what you would like to change.
+Pull requests are welcome. For major changes, please open an issue first.
+
+- **Discussions:** [github.com/freeunitorg/freeunit/discussions](https://github.com/freeunitorg/freeunit/discussions)
+- **Security:** [team@freeunit.org](mailto:team@freeunit.org)
 
 ## License
 
-The documentation for NGINX Unit is licensed under [CC BY 4.0](LICENSE).
+The FreeUnit documentation is licensed under [CC BY 4.0](LICENSE).
+
+---
+
+*Forked from [nginx/unit-docs](https://github.com/nginx/unit-docs) — original authors retain full credit.*

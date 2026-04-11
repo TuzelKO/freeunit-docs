@@ -6,30 +6,21 @@
     </style>
   </defs>
 
-  <!-- Hexagon (green shell, N removed) -->
+  <!-- Hexagon icon + N letter (original coords, shifted so bounding box starts at 0,0) -->
   <g transform="translate(-149 -203)">
     <path fill="#009639" d="M452.69,284.92L317.13,206.65a21.46,21.46,0,0,0-21.4,0L160.17,284.92
       a21.46,21.46,0,0,0-10.69,18.53V460a21.45,21.45,0,0,0,10.7,18.53l135.56,78.26
       a21.46,21.46,0,0,0,21.4,0l135.56-78.26A21.45,21.45,0,0,0,463.39,460V303.45
       A21.45,21.45,0,0,0,452.69,284.92Z"/>
+    <path fill="white" d="M384.85,441.92c0,9.29-8.21,17-19.84,17-8.33,0-17.94-3.36-23.81-10.65
+      l-78.27-93.67v87.34a17,17,0,0,1-17,17h-1a17,17,0,0,1-17-17l0-120.42
+      c0-9.29,8.21-17,19.84-17,8.33,0,17.94,3.36,23.81,10.65l78.27,93.67V321.51
+      a17,17,0,0,1,17-17h1a17,17,0,0,1,17,17Z"/>
   </g>
 
-  <!-- FU centered in hexagon (center at 157, 178) -->
-  <text x="157" y="178"
-        font-family="'Open Sans',Arial,Helvetica,sans-serif"
-        font-size="108" font-weight="700"
-        fill="white"
-        text-anchor="middle" dominant-baseline="central">FU</text>
-
-  <!-- FreeUnit wordmark -->
+  <!-- FreeUnit wordmark (vertically centered in 357px, baseline ~240) -->
   <text class="wordmark"
-        x="340" y="203"
+        x="340" y="240"
         font-family="'Open Sans',Arial,Helvetica,sans-serif"
-        font-size="140" font-weight="700">FreeUnit</text>
-
-  <!-- Subtitle -->
-  <text x="344" y="284"
-        font-family="'Open Sans',Arial,Helvetica,sans-serif"
-        font-size="54"
-        fill="#999999">Community LTS fork</text>
+        font-size="170" font-weight="700">FreeUnit</text>
 </svg>

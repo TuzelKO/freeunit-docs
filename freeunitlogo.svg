@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1660 332">
+  <rect width="1660" height="332" fill="#222222"/>
+
+  <!-- Hexagon shell (green, no N inside) -->
+  <g transform="translate(16 16) scale(0.852) translate(-149 -206.65)">
+    <path fill="#009639" d="M452.69,284.92L317.13,206.65a21.46,21.46,0,0,0-21.4,0L160.17,284.92
+      a21.46,21.46,0,0,0-10.69,18.53V460a21.45,21.45,0,0,0,10.7,18.53l135.56,78.26
+      a21.46,21.46,0,0,0,21.4,0l135.56-78.26A21.45,21.45,0,0,0,463.39,460V303.45
+      A21.45,21.45,0,0,0,452.69,284.92Z"/>
+  </g>
+
+  <!-- FU initials centered in hexagon (center at 150, 157) -->
+  <text x="150" y="157"
+        font-family="'Open Sans',Arial,Helvetica,sans-serif"
+        font-size="118" font-weight="700"
+        fill="white"
+        text-anchor="middle" dominant-baseline="central">FU</text>
+
+  <!-- FreeUnit wordmark -->
+  <text x="304" y="218"
+        font-family="'Open Sans',Arial,Helvetica,sans-serif"
+        font-size="155" font-weight="700"
+        fill="white">FreeUnit</text>
+
+  <!-- Tagline -->
+  <text x="308" y="276"
+        font-family="'Open Sans',Arial,Helvetica,sans-serif"
+        font-size="34"
+        fill="#999999">Community LTS fork of Unit</text>
+</svg>

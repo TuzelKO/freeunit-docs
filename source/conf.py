@@ -2,8 +2,8 @@
 
 import os, sys
 
-project = 'NGINX Unit'
-author = 'NGINX, Inc.'
+project = 'FreeUnit'
+author = 'FreeUnit Community'
 copyright = '2017-2025'
 version = '1.34.2'
 release_date = 'Feb 26, 2025'
@@ -18,7 +18,7 @@ html_theme_path = ["."]
 html_use_index = False
 html_permalinks = True
 html_permalinks_icon = u'§'
-html_baseurl = 'https://unit.nginx.org/'
+html_baseurl = 'https://docs.freeunit.org/'
 html_extra_path = ['robots.txt', 'CHANGES.txt', 'go', '404.html']
 html_context = {
     'release_date'  : release_date,
@@ -31,8 +31,8 @@ rst_prolog = """
 .. |release_date| replace:: {}
 """.format(release_date)
 
-edit_on_github_project = 'nginx/unit-docs'
-edit_on_github_discussion = 'nginx/unit'
+edit_on_github_project = 'freeunitorg/docs'
+edit_on_github_discussion = 'freeunitorg/freeunit'
 edit_on_github_branch = 'main'
 
 exclude_patterns = ['include']
