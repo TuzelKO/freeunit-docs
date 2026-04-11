@@ -4,37 +4,43 @@
 Unit 1.35.3 Released
 ####################
 
-FreeUnit 1.35.3 focuses on CI infrastructure improvements,
-dependency upgrades, and ARM64 build optimizations.
+FreeUnit 1.35.3 migrates the contrib package mirror to FreeUnit infrastructure,
+upgrades dependencies, and improves CI build performance.
 
-**CI and build**
+**Infrastructure**
 
-- Eliminated QEMU emulation for ARM64 builds — significant CI speedup.
+- Contrib package mirror migrated from ``packages.nginx.org`` to
+  ``packages.freeunit.org``; all dependency tarballs are now served from
+  FreeUnit infrastructure.
 
-- njs updated to version 0.9.6 from the FreeUnit fork
+- ``unitctl`` Dockerfile GPG key URL migrated to ``freeunit.org``.
+
+**Dependency upgrades**
+
+- njs updated to 0.9.6 from the FreeUnit fork
   (`github.com/freeunitorg/njs <https://github.com/freeunitorg/njs>`_).
 
-- libunit-wasm updated to version 0.5.0 from the FreeUnit fork
+- libunit-wasm updated to 0.5.0 from the FreeUnit fork
   (`github.com/freeunitorg/freeunit-wasm <https://github.com/freeunitorg/freeunit-wasm>`_).
 
-- Dependencies updated: wasmtime 35 → 43, wasi-sysroot 24 → 27,
-  Rust 1.89 → 1.94.
+- wasmtime 43.0.0, wasi-sysroot 27.0.
+
+- Rust toolchain bumped to 1.94.1 in all Docker images.
 
 **Java**
 
-- Java 11 (EOL) removed from the CI matrix; replaced with
-  Java 17 and Java 21 (Eclipse Temurin on Ubuntu Noble).
+- Java 11 (EOL) removed from the CI matrix and Docker images; replaced with
+  Java 17 and Java 21 based on Eclipse Temurin (Ubuntu Noble).
+
+**CI**
+
+- Docker CI split into native AMD64 and ARM64 build jobs with a separate
+  manifest-merge step, eliminating QEMU emulation overhead for ARM64 builds.
 
 **Docker**
 
-- Successfully builds and verifies 21 image variants:
-  minimal, wasm, go1.24, go1.25, jsc17, jsc21, node20, node22,
-  perl5.38, perl5.40, php8.3, php8.4, php8.5,
-  python3.12, python3.12-slim, python3.13, python3.13-slim,
-  python3.14, python3.14-slim, ruby3.3, ruby3.4.
-
-- Added :file:`build-local.sh` script and documentation for
-  convenient local image testing.
+- Added :file:`pkg/docker/build-local.sh` script for convenient local image
+  building and testing.
 
 **************
 Full Changelog
@@ -42,17 +48,21 @@ Full Changelog
 
 .. code-block:: none
 
-  Changes with Unit 1.35.3                                          07 Apr 2026
+  Changes with FreeUnit 1.35.3                                     07 Apr 2026
 
-      *) Change: eliminated QEMU emulation for ARM64 CI builds.
+      *) Feature: migrate contrib package mirror from packages.nginx.org to
+         packages.freeunit.org; all dependency tarballs are now served from
+         FreeUnit infrastructure.
 
-      *) Change: njs updated to 0.9.6 (freeunitorg/njs fork).
+      *) Feature: upgrade contrib dependencies — njs 0.9.6, libunit-wasm 0.5.0,
+         wasmtime 43.0.0, wasi-sysroot 27.0.
 
-      *) Change: libunit-wasm updated to 0.5.0 (freeunitorg/freeunit-wasm).
+      *) Feature: replace EOL jsc11 Docker image with jsc17 and jsc21 based on
+         Eclipse Temurin (Ubuntu Noble).
 
-      *) Change: wasmtime 35→43, wasi-sysroot 24→27, Rust 1.89→1.94.
+      *) Feature: split Docker CI into native AMD64 and ARM64 build jobs with a
+         separate manifest-merge step; eliminates QEMU emulation overhead.
 
-      *) Change: Java 11 (EOL) removed; CI matrix now covers Java 17
-         and Java 21 on Eclipse Temurin / Ubuntu Noble.
+      *) Change: bump Rust toolchain to 1.94.1 in all Docker images.
 
-      *) Misc: added build-local.sh for local Docker image testing.
+      *) Change: unitctl Dockerfile GPG key URL migrated to freeunit.org.

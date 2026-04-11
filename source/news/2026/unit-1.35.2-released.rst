@@ -4,30 +4,25 @@
 Unit 1.35.2 Released
 ####################
 
-FreeUnit 1.35.2 upgrades to OpenSSL 3.6 across all builds,
-replacing deprecated APIs and updating Docker base images.
+FreeUnit 1.35.2 is a bug-fix release addressing PHP 8.5 worker shutdown
+and build compatibility issues.
 
-**OpenSSL 3.6**
+**PHP**
 
-- Replaced deprecated OpenSSL APIs:
+- Fixed graceful shutdown for PHP workers running in TrueAsync mode. Workers
+  now exit cleanly when Unit delivers a quit signal instead of blocking
+  indefinitely in the event loop.
 
-  - :file:`nxt_cert.c`: :func:`EVP_PKEY_asn1_find_str` /
-    :func:`get0_info` replaced with :func:`OBJ_sn2nid`.
+- Guarded ``pre_request_init`` SAPI callback registration with
+  ``NXT_PHP_PRE_REQUEST_INIT`` to fix builds against PHP versions that do not
+  expose this callback.
 
-  - :file:`nxt_openssl.c`, :file:`auto/ssltls`: :func:`SSLeay` /
-    :func:`SSLeay_version` replaced with :func:`OpenSSL_version_num` /
-    :func:`OpenSSL_version`.
+**CI**
 
-- CI now builds and caches OpenSSL 3.6.0 from source on
-  :command:`ubuntu-latest` runners so that
-  :option:`-Werror -Wdeprecated-declarations` catches regressions
-  in all CI jobs.
-
-**Docker images**
-
-- All remaining bookworm base images switched to trixie (ships OpenSSL 3.6).
-
-- Eclipse Temurin upgraded from jammy to noble.
+- Fixed Ruby language module build in the ``clang-ast`` workflow on
+  ``debian:testing``: resolved a Debian multiarch library path mismatch and
+  suppressed ``-Wdefault-const-init-field-unsafe`` from clang 21 on Ruby 3.3
+  headers.
 
 **************
 Full Changelog
@@ -35,13 +30,17 @@ Full Changelog
 
 .. code-block:: none
 
-  Changes with Unit 1.35.2                                          05 Apr 2026
+  Changes with FreeUnit 1.35.2                                     04 Apr 2026
 
-      *) Change: upgraded to OpenSSL 3.6; replaced deprecated EVP and
-         SSLeay APIs in nxt_cert.c, nxt_openssl.c, and auto/ssltls.
+      *) Bugfix: fix graceful shutdown for PHP workers running in TrueAsync
+         mode; workers now exit cleanly when Unit delivers a quit signal
+         instead of blocking indefinitely in the event loop.
 
-      *) Change: CI builds OpenSSL 3.6.0 from source; -Wdeprecated-
-         declarations enabled as a hard error across all jobs.
+      *) Bugfix: guard pre_request_init SAPI callback registration with
+         NXT_PHP_PRE_REQUEST_INIT to fix builds against PHP versions that
+         do not expose this callback.
 
-      *) Change: Docker bookworm images switched to trixie (OpenSSL 3.6);
-         eclipse-temurin upgraded jammy → noble.
+      *) CI: fix Ruby language module build in clang-ast workflow on
+         debian:testing — resolve Debian multiarch library path mismatch
+         and suppress -Wdefault-const-init-field-unsafe from clang 21 on
+         Ruby 3.3 headers.
