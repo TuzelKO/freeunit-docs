@@ -44,6 +44,7 @@ clean:
 
 deploy: site
 	$(eval TMP := $(shell mktemp -d))
+	mkdir -p ~/.gnupg && chmod 700 ~/.gnupg
 	curl -L $(FREEUNIT_KEY) | gpg --dearmor \
 		| tee "$(BUILDDIR)/keys/freeunit-keyring.gpg" > /dev/null
 	gpg --dry-run --quiet --import --import-options import-show \
