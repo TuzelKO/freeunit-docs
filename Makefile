@@ -2,10 +2,11 @@ SPHINX		?= sphinx-build
 SERVER		?= python3 -mhttp.server
 
 SITEMAP		?= python3 sitemaps.py
-URL		?= https://unit.nginx.org
+URL		?= https://docs.freeunit.org
 GOOGLE		?= https://www.google.com/webmasters/tools/ping?sitemap=
 BING		?= http://www.bing.com/ping?sitemap=
-UNIT_SECURITY	?= https://github.com/nginx/unit/raw/master/SECURITY.md
+UNIT_SECURITY	?= https://github.com/freeunitorg/freeunit/raw/main/SECURITY.md
+FREEUNIT_KEY	?= https://freeunit.org/media/keys/6C68B7AA.asc
 
 BUILDDIR	?= build
 DEPLOYDIR	?= deploy
@@ -43,10 +44,10 @@ clean:
 
 deploy: site
 	$(eval TMP := $(shell mktemp -d))
-	curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
-		| tee "$(BUILDDIR)/keys/nginx-keyring.gpg" > /dev/null
+	curl -L $(FREEUNIT_KEY) | gpg --dearmor \
+		| tee "$(BUILDDIR)/keys/freeunit-keyring.gpg" > /dev/null
 	gpg --dry-run --quiet --import --import-options import-show \
-		"$(BUILDDIR)/keys/nginx-keyring.gpg"
+		"$(BUILDDIR)/keys/freeunit-keyring.gpg"
 	rsync -rv $(EXCLUDE) "$(BUILDDIR)/" "$(TMP)"
 	rsync -rcv --delete --exclude='*.gz' --exclude='tmp.*' \
 		  --exclude='/sitemap.xml' "$(TMP)/" "$(DEPLOYDIR)"
@@ -54,6 +55,6 @@ deploy: site
 		> "$(TMP)/sitemap.xml"
 	rsync -rcv "$(TMP)/sitemap.xml" "$(DEPLOYDIR)"
 	-rm -rf "$(TMP)"
-	mkdir $(DEPLOYDIR)/.well-known
+	mkdir -p $(DEPLOYDIR)/.well-known
 	curl -L $(UNIT_SECURITY) -o "$(DEPLOYDIR)/.well-known/security.txt" 2>/dev/null
 	chmod -R g=u "$(DEPLOYDIR)"

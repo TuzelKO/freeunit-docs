@@ -1,15 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- TrustArc handles cookie consent and is a prerequisite for loading Tealium -->
-<script async="async" src="https://consent.trustarc.com/notice?domain=f5.com&c=teconsent&js=nj&noticeType=bb&text=true&gtm=1" crossorigin=""></script>
-<!-- Tealium profile utag.sync.js script -->
-<script src="https://mktg.tags.f5.com/nginx-unit/prod/utag.sync.js"></script>
-<!-- End TrustArc/Tealium -->
 
 <meta charset="utf-8" />
 {%- if pagename == "index" %}
-<meta name="go-import" content="unit.nginx.org git https://github.com/nginx/unit" />
+<meta name="go-import" content="freeunit.org git https://github.com/freeunitorg/freeunit" />
 {%- endif %}
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <!-- Open Graph / Facebook -->
@@ -21,11 +16,10 @@
 {%- endif %}
 <meta property="og:title" content="{{ project }}: {{ title|striptags|e }}">
 {{ metatags }}
-<meta property="og:image" content="{{ 'http://unit.nginx.org/_static/logo.png' + '?' + md5('theme/static/logo.png') }}">
-<meta property="og:image:secure_url" content="{{ 'https://unit.nginx.org/_static/logo.png' + '?' + md5('theme/static/logo.png') }}">
-<meta property="og:image:width" content="988">
-<meta property="og:image:height" content="357">
-<meta property="og:image:alt" content="NGINX Unit logo" />
+<meta property="og:image" content="{{ 'https://docs.freeunit.org/_static/logo.png' + '?' + md5('theme/static/logo.png') }}">
+<meta property="og:image:width" content="1910">
+<meta property="og:image:height" content="1000">
+<meta property="og:image:alt" content="FreeUnit logo" />
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image">
 
@@ -73,7 +67,7 @@
 </style>
 <link rel="stylesheet" href="{{ pathto('_static/' + styles[-1], 1) + '?' + md5('theme/static/' + styles[-1]) }}" />
 <link rel="icon" href="{{ pathto('_static/icon.png', 1) + '?' + md5('theme/static/icon.png') }}" />
-<link rel="alternate" type="application/rss+xml" title="Subscribe to NGINX Unit News" href="{{ nxt_baseurl + nxt_rss_file }}" />
+<link rel="alternate" type="application/rss+xml" title="Subscribe to FreeUnit News" href="{{ nxt_baseurl + nxt_rss_file }}" />
 <script async src="{{ pathto('_static/script.js', 1) + '?' + md5('theme/static/script.js') }}"></script>
 
 {%- if next %}
@@ -86,17 +80,6 @@
 <title>{{ title|striptags|e }} — {{project}}</title>
 </head>
 <body>
-<!-- Tealium Universal Tag -->
-<script type="text/javascript">
-  (function(a,b,c,d) {
-      a='//mktg.tags.f5.com/nginx-unit/prod/utag.js';
-      b=document;c='script';d=b.createElement(c);d.src=a;
-      d.type='text/java'+c;d.async=true;
-      a=b.getElementsByTagName(c)[0];a.parentNode.insertBefore(d,a)})();
-</script>
-<!-- End Tealium Universal Tag -->
-
-<div id="rennab"><a href="https://github.com/nginx/unit?tab=readme-ov-file#nginx-unit">As of October 2025, NGINX Unit is archived and unmaintained.</a></div>
 
 <div id="main">
 <div id="side">
@@ -104,7 +87,7 @@
         {%- if pagename != "index" %}
         <a href="{{ pathto('index') }}">
         {%- endif %}
-            <img src="{{ pathto('_static/logo.svg', 1) + '?' + md5('theme/static/logo.svg')}}" alt="{{project}}" />
+            <img src="{{ pathto('_static/freeunitlogo.svg', 1) + '?' + md5('theme/static/freeunitlogo.svg')}}" alt="{{project}}" />
         {%- if pagename != "index" %}
         </a>
         {%- endif %}
@@ -121,20 +104,12 @@
     <div class="nxt_edit_link"><a href="{{ edit_on_github_url }}"><div></div>Edit this page</a></div>
     {% endif %}
     {% if edit_on_github_url %}
-    <div class="nxt_discuss_link"><a href="https://github.com/nginx/unit/discussions/"><div></div>Discuss on GitHub</a></div>
+    <div class="nxt_discuss_link"><a href="https://github.com/freeunitorg/freeunit/discussions/"><div></div>Discuss on GitHub</a></div>
     {% endif %}
     <p id="footer">
-        © {{copyright}} <a href="https://www.nginx.com/">{{author}}</a>
-    </p>
-    <p id="tecookie">
-        <!-- TrustArc cookie preferences link -->
-        <span id="teconsent"></span>
-        <!-- End TrustArc cookie preferences link -->
+        © {{copyright}} <a href="https://freeunit.org/">{{author}}</a>
     </p>
 </div>
 </div>
-<!-- TrustArc cookie consent -->
-<div id="consent_blackbar" style="position:fixed;top:0px;width:100%">
-<!-- End TrustArc cookie consent -->
 </body>
 </html>

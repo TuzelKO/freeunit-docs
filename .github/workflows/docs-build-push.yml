@@ -1,42 +1,168 @@
-name: Build and deploy docs (unit.nginx.org)
+name: Docs Build Push
+
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       environment:
-        description: 'Environment to deploy to'
+        required: false
+        default: preview
+        type: string
+      production_url_path:
         required: true
-        default: 'preview'
-        type: choice
-        options:
-        - preview
-        - dev
-        - staging
-        - prod
-  pull_request:
-    branches:
-      - "*"
-  push:
-    branches:
-      - "main"
+        type: string
+      preview_url_path:
+        required: true
+        type: string
+      docs_source_path:
+        required: true
+        type: string
+      docs_build_path:
+        required: false
+        type: string
+        default: ./
+      doc_type:
+        type: string
+        default: sphinx
+      auto_deploy_branch:
+        type: string
+        default: ""
+      auto_deploy_env:
+        type: string
+        default: ""
 
-permissions:
-  contents: read
+env:
+  PR_NUMBER: ${{ github.event.pull_request.number }}
 
 jobs:
-  call-docs-build-push:
-    uses: nginxinc/docs-actions/.github/workflows/docs-build-push.yml@9c59fab05a8131f4d691ba6ea2b6a119f3ef832a # v1.0.7
+  build:
+    runs-on: ubuntu-24.04
+    env:
+      PRODUCTION_URL_PATH: ${{ inputs.production_url_path }}
+      PREVIEW_URL_PATH: ${{ inputs.preview_url_path }}
+      DOCS_SOURCE_PATH: ${{ inputs.docs_source_path }}
+      DEPLOYMENT_ENV: ${{ inputs.environment }}
+      AUTO_DEPLOY_BRANCH: ${{ inputs.auto_deploy_branch }}
+      AUTO_DEPLOY_ENV: ${{ inputs.auto_deploy_env }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check and setup auto-deploy
+        if: inputs.auto_deploy_branch == github.ref_name && inputs.environment == ''
+        run: echo "DEPLOYMENT_ENV=${AUTO_DEPLOY_ENV}" >> $GITHUB_ENV
+
+      - name: Validate environment
+        run: |
+          if [[ -z "${DEPLOYMENT_ENV}" ]]; then
+            echo "DEPLOYMENT_ENV=preview" >> "$GITHUB_ENV"
+          fi
+          if [[ ! "${DEPLOYMENT_ENV}" =~ ^(prod|preview)$ ]]; then
+            echo "::error::Invalid environment: ${DEPLOYMENT_ENV}. Must be prod or preview"
+            exit 1
+          fi
+          if [[ "${DEPLOYMENT_ENV}" == "preview" && -z "${PR_NUMBER}" ]]; then
+            echo "PR_NUMBER=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          fi
+
+      ### Sphinx build
+      - name: Setup Python
+        if: inputs.doc_type == 'sphinx'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        if: inputs.doc_type == 'sphinx'
+        working-directory: ${{ inputs.docs_build_path }}
+        run: pip install -r requirements.txt
+
+      - name: Build Sphinx
+        if: inputs.doc_type == 'sphinx'
+        working-directory: ${{ inputs.docs_build_path }}
+        run: make deploy
+
+      ### Hugo build
+      - name: Setup Hugo
+        if: inputs.doc_type == 'hugo'
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: "0.134.2"
+          extended: true
+
+      - name: Build Hugo (preview)
+        if: inputs.doc_type == 'hugo' && env.DEPLOYMENT_ENV == 'preview'
+        working-directory: ${{ inputs.docs_build_path }}
+        run: hugo --gc -e production --baseURL="https://docs.freeunit.org${PREVIEW_URL_PATH}/${PR_NUMBER}"
+
+      - name: Build Hugo (prod)
+        if: inputs.doc_type == 'hugo' && env.DEPLOYMENT_ENV == 'prod'
+        working-directory: ${{ inputs.docs_build_path }}
+        run: hugo --gc -e production --baseURL="https://docs.freeunit.org${PRODUCTION_URL_PATH}"
+
+      ### Upload artifact
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ inputs.docs_build_path }}/${{ inputs.docs_source_path }}
+
+  deploy:
+    needs: build
+    if: inputs.environment == 'prod' || (inputs.auto_deploy_branch != '' && github.ref_name == inputs.auto_deploy_branch)
+    runs-on: ubuntu-24.04
     permissions:
-      pull-requests: write # needed to write preview url comment to PR
-      contents: read
-    with:
-      production_url_path: ""
-      preview_url_path: "/previews/unit"
-      docs_source_path: "deploy"
-      docs_build_path: "."
-      doc_type: "sphinx"
-      environment: ${{inputs.environment}}
-      auto_deploy_branch: "main"
-      auto_deploy_env: "prod"
-    secrets:
-      AZURE_CREDENTIALS: ${{secrets.AZURE_CREDENTIALS_DOCS}}
-      AZURE_KEY_VAULT: ${{secrets.AZURE_KEY_VAULT_DOCS}}
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  pr-comment:
+    needs: build
+    if: github.event.action == 'opened' || github.event.action == 'synchronize'
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Post preview comment
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL_PATH: ${{ inputs.preview_url_path }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const exists = comments.find(c => c.user.login === 'github-actions[bot]' && c.body.includes('Deploy Preview'));
+            if (exists) { core.info('Comment already exists, skipping'); return; }
+
+            const previewUrl = `https://docs.freeunit.org${process.env.PREVIEW_URL_PATH}/${process.env.PR_NUMBER}/`;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### ✅ Deploy Preview\n\n| | Link |\n|---|---|\n| 😎 Preview | [${previewUrl}](${previewUrl}) |`
+            });
+
+  summary:
+    needs: [build, deploy]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Write summary
+        run: |
+          echo "### Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Task | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | \`${{ inputs.environment }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| URL | https://docs.freeunit.org${{ inputs.production_url_path }} |" >> $GITHUB_STEP_SUMMARY
