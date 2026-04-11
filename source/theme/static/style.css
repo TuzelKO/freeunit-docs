@@ -695,7 +695,25 @@ iframe {
 .nxt_copy_ws {
     visibility: hidden;
 }
-/* GitHub link */
+/* Inline SVG icon (Telegram etc.) */
+.nxt-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.15em;
+    fill: currentColor;
+}
+/* GitHub repo link */
+.nxt_github_link {
+    position: relative;
+    font-size: .9em;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    display: block;
+    text-align: right;
+}
+/* GitHub discussions link */
 .nxt_discuss_link {
     position: relative;
     font-size: .9em;
@@ -745,10 +763,24 @@ iframe {
     font-size: .9em;
     font-weight: bold;
 }
+/* Telegram link */
+.nxt_telegram_link {
+    position: relative;
+    font-size: .9em;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    display: block;
+    text-align: right;
+}
 @media (min-width: 45em) {
     .nxt_edit_link {
     }
     .nxt_discuss_link {
+    }
+    .nxt_github_link {
+    }
+    .nxt_telegram_link {
     }
 }
 @media (max-width: 45em) {
@@ -787,6 +819,12 @@ iframe {
         display: none;
     }
     .nxt_discuss_link {
+        display: none;
+    }
+    .nxt_github_link {
+        display: none;
+    }
+    .nxt_telegram_link {
         display: none;
     }
 }
