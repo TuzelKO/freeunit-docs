@@ -1,6 +1,7 @@
 .. meta::
  :og:description: Migrate from archived Unit installations or community packages
- to the community-maintained FreeUnit fork.
+ to the community-maintained FreeUnit fork, including maintainer guidance
+ for updating downstream packaging recipes.
 
 .. include:: include/replace.rst
 
@@ -8,14 +9,20 @@
 Migration
 #########
 
-This guide helps you migrate from archived Unit installations
-or community-maintained packages to **FreeUnit**,
-the community-maintained LTS fork.
+This guide covers two audiences:
+
+- **Users** running archived Unit or a community-maintained package
+  who want to switch to **FreeUnit**, the community-maintained LTS fork.
+- **Package maintainers** of community repositories (Alpine, Arch, Gentoo,
+  *BSD, Nix, Remi, etc.) who need to rebase their recipes onto the
+  ``freeunitorg/freeunit`` source tree.
 
 .. note::
  FreeUnit is ABI-compatible with previous Unit builds.
- In most cases, migration requires only switching to a new build source
- — no configuration changes needed.
+ Functionally nothing changes — only the **package name**
+ (``unit``/``nginx-unit`` → ``freeunit``) and the **upstream source URL**
+ (``github.com/nginx/unit`` → ``github.com/freeunitorg/freeunit``).
+ ``config.json``, runtime paths, CLI flags, and the control API stay as-is.
 
 .. warning::
  **Official RPM/DEB packages for FreeUnit are coming soon.**
@@ -28,19 +35,26 @@ the community-maintained LTS fork.
  Native package manager support (APT/YUM) is in active development.
  Track progress at: https://github.com/freeunitorg/freeunit/milestone/2
 
-You can migrate to FreeUnit in three alternative ways:
+**For users** — pick one install path:
 
 - Run our :ref:`Docker official images <migration-docker>`,
- prepackaged with varied language combinations.
+  prepackaged with varied language combinations.
 
 - To fine-tune FreeUnit to your goals,
- download the :ref:`sources <migration-source>`,
- install the :ref:`toolchain <source-prereqs>`,
- and :ref:`build <migration-source-build>` a custom binary from scratch.
+  download the :ref:`sources <migration-source>`,
+  install the :ref:`toolchain <source-prereqs>`,
+  and :ref:`build <migration-source-build>` a custom binary from scratch.
 
 - For RHEL/Fedora users who want to keep Remi's PHP packages,
- try the :ref:`hybrid approach <migration-remi-hybrid>`
- (FreeUnit core + Remi PHP modules).
+  try the :ref:`hybrid approach <migration-remi-hybrid>`
+  (FreeUnit core + Remi PHP modules).
+
+**For package maintainers** — rebase your recipe:
+
+- Follow
+  :ref:`Community Repository Maintainers <migration-community-repos>`
+  below for per-distro steps (source URL, rename, ``provides``/
+  ``obsoletes`` aliases, checksums).
 
 .. note::
  The commands in this document starting with a hash (#) must be run as root or
@@ -48,9 +62,32 @@ You can migrate to FreeUnit in three alternative ways:
 
 .. _migration-community-repos:
 
-******************************
-Community Repositories
-******************************
+***********************************
+Community Repository Maintainers
+***********************************
+
+This section targets **downstream packagers** who maintain a Unit recipe
+in a community repository (AUR, Alpine aports, Gentoo ::gentoo,
+FreeBSD ports, Remi's RPM, etc.) and want to track FreeUnit going forward.
+
+The rebase is mechanical:
+
+#. Change the **source URL** from
+   ``https://github.com/nginx/unit`` to
+   ``https://github.com/freeunitorg/freeunit``.
+#. Rename the **package** from ``unit`` (or ``nginx-unit``) to ``freeunit``.
+   Rename subpackages accordingly
+   (``unit-php`` → ``freeunit-php``, ``unit-python3`` → ``freeunit-python3``, …).
+#. Keep the old name as a ``provides``/``replaces``/``obsoletes`` alias
+   so existing installs upgrade cleanly.
+#. Update signing/checksum metadata against the new release tarballs.
+#. Verify runtime paths still match the table at the end of each tab —
+   upstream does not enforce a layout, so distro defaults are preserved.
+
+.. note::
+ FreeUnit release tags follow the same ``1.X.Y`` scheme as archived Unit,
+ starting from the last Unit release. Tarballs:
+ ``https://github.com/freeunitorg/freeunit/archive/refs/tags/<TAG>.tar.gz``.
 
 .. warning::
  These distributions are maintained by their respective communities,
@@ -63,39 +100,43 @@ Community Repositories
 
  .. tab:: Alpine
 
- .. warning::
-  Alpine's Unit packages may be outdated.
-  For security updates and PHP 8.3+ support,
-  migrating to the latest FreeUnit build is recommended.
+ Recipe: ``community/unit/APKBUILD`` in
+ `alpinelinux/aports <https://gitlab.alpinelinux.org/alpine/aports>`_.
 
- To migrate from Alpine's Unit packages to FreeUnit:
+ #. **Rename the aport**
 
- #. **Remove existing Unit packages**
+    Move ``community/unit/`` to ``community/freeunit/`` and update
+    ``APKBUILD``:
 
-    .. code-block:: console
+    .. code-block:: sh
+     :caption: community/freeunit/APKBUILD
 
-     # apk del unit unit-openrc unit-perl unit-php* unit-python* unit-ruby
+     pkgname=freeunit
+     pkgver=1.35.3
+     source="$pkgname-$pkgver.tar.gz::https://github.com/freeunitorg/freeunit/archive/refs/tags/$pkgver.tar.gz"
+     builddir="$srcdir/freeunit-$pkgver"
+     subpackages="$pkgname-openrc $pkgname-doc $pkgname-dev
+      $pkgname-perl $pkgname-php83 $pkgname-python3 $pkgname-ruby"
+     provides="unit=$pkgver-r$pkgrel"
+     replaces="unit"
 
- #. **Build FreeUnit from source**
-
-    .. code-block:: console
-
-     # apk add build-base openssl-dev pcre2-dev libxslt-dev
-     # git clone https://github.com/freeunitorg/freeunit
-     # cd freeunit
-     # ./configure --openssl --modules=php:8.4,python:3.13,nodejs:22
-     # make
-     # make install
-
- #. **Set up OpenRC service**
+ #. **Refresh checksums**
 
     .. code-block:: console
 
-     # cp pkg/openrc/unit /etc/init.d/
-     # rc-update add unit
-     # rc-service unit restart
+     $ abuild checksum
 
- Runtime details:
+ #. **Build and test**
+
+    .. code-block:: console
+
+     $ abuild -r
+
+ #. **Submit an MR** to aports following the
+    `Alpine contributing guide
+    <https://wiki.alpinelinux.org/wiki/Creating_an_Alpine_package>`_.
+
+ Runtime details (unchanged from the legacy ``unit`` aport):
 
  .. list-table::
 
@@ -110,39 +151,42 @@ Community Repositories
 
  .. tab:: ALT
 
- .. warning::
-  ALT Linux's Unit packages may be outdated.
-  For security updates and PHP 8.3+ support,
-  migrating to the latest FreeUnit build is recommended.
+ Recipe: ``unit.spec`` in the Sisyphus
+ `gears/u/unit
+ <https://git.altlinux.org/gears/u/unit.git>`_ repository.
 
- To migrate from ALT's Unit packages to FreeUnit:
-
- #. **Remove existing Unit packages**
+ #. **Clone the gear and branch it**
 
     .. code-block:: console
 
-     # apt-get remove unit unit-perl unit-php unit-python3 unit-ruby
+     $ git clone git://git.altlinux.org/gears/u/unit.git freeunit
+     $ cd freeunit
 
- #. **Build FreeUnit from source**
+ #. **Update the spec**
+
+    .. code-block:: spec
+     :caption: freeunit.spec
+
+     Name:    freeunit
+     Version: 1.35.3
+     Source0: https://github.com/freeunitorg/freeunit/archive/refs/tags/%version.tar.gz
+     Provides: unit = %EVR
+     Obsoletes: unit < %EVR
+
+    Rename subpackages the same way
+    (``unit-perl`` → ``freeunit-perl``, ``unit-php`` → ``freeunit-php``, …).
+
+ #. **Rebuild in the hasher**
 
     .. code-block:: console
 
-     # apt-get install build-essential libssl-dev libpcre2-dev libxslt1-dev
-     # git clone https://github.com/freeunitorg/freeunit
-     # cd freeunit
-     # ./configure --openssl --modules=php:8.4,python:3.13,nodejs:22
-     # make
-     # make install
+     $ gear-rpm -bb
+     $ hsh --init && hsh --build freeunit-*.src.rpm
 
- #. **Set up systemd service**
+ #. **Push to Sisyphus** via
+    ``gear-commit`` + ``git push`` once a maintainer has reviewed.
 
-    .. code-block:: console
-
-     # cp pkg/systemd/unit.service /etc/systemd/system/
-     # systemctl daemon-reload
-     # systemctl enable --now unit
-
- Runtime details:
+ Runtime details (unchanged from the legacy ``unit`` gear):
 
  .. list-table::
 
@@ -157,39 +201,55 @@ Community Repositories
 
  .. tab:: Arch
 
+ Recipe: ``PKGBUILD`` in the
+ `nginx-unit AUR package
+ <https://aur.archlinux.org/pkgbase/nginx-unit/>`_.
+
+ Recommended path: publish a **new AUR package named** ``freeunit`` and
+ keep ``nginx-unit`` around for a release or two pointing at the same
+ tarball (``provides=('nginx-unit')``, ``conflicts=('nginx-unit')``).
+
+ #. **Clone the AUR repo and rename**
+
+    .. code-block:: console
+
+     $ git clone ssh://aur@aur.archlinux.org/freeunit.git
+     $ cd freeunit
+
+ #. **Update PKGBUILD**
+
+    .. code-block:: sh
+     :caption: PKGBUILD
+
+     pkgbase=freeunit
+     pkgname=('freeunit' 'freeunit-php' 'freeunit-python' 'freeunit-nodejs')
+     pkgver=1.35.3
+     url='https://github.com/freeunitorg/freeunit'
+     source=("freeunit-$pkgver.tar.gz::https://github.com/freeunitorg/freeunit/archive/refs/tags/$pkgver.tar.gz")
+     provides=("nginx-unit=$pkgver")
+     replaces=('nginx-unit')
+     conflicts=('nginx-unit')
+
+ #. **Refresh checksums and .SRCINFO**
+
+    .. code-block:: console
+
+     $ updpkgsums
+     $ makepkg --printsrcinfo > .SRCINFO
+
+ #. **Build in a clean chroot, then push**
+
+    .. code-block:: console
+
+     $ makepkg -s
+     $ git commit -am "freeunit 1.35.3: rebase on freeunitorg/freeunit"
+     $ git push
+
  .. warning::
-  Arch AUR Unit packages may be outdated.
-  For security updates and PHP 8.3+ support,
-  migrating to the latest FreeUnit build is recommended.
+  AUR packages are user-produced without pre-moderation.
+  Audit the ``PKGBUILD`` and any ``.install`` scripts before publishing.
 
- To migrate from Arch's Unit packages to FreeUnit:
-
- #. **Remove existing AUR package**
-
-    .. code-block:: console
-
-     # pacman -R unit
-
- #. **Build FreeUnit from source**
-
-    .. code-block:: console
-
-     # pacman -S base-devel openssl pcre2 libxslt
-     # git clone https://github.com/freeunitorg/freeunit
-     # cd freeunit
-     # ./configure --openssl --modules=php:8.4,python:3.13,nodejs:22
-     # make
-     # make install
-
- #. **Set up systemd service**
-
-    .. code-block:: console
-
-     # cp pkg/systemd/unit.service /etc/systemd/system/
-     # systemctl daemon-reload
-     # systemctl enable --now unit
-
- Runtime details:
+ Runtime details (unchanged from the legacy ``nginx-unit`` AUR package):
 
  .. list-table::
 
@@ -204,39 +264,55 @@ Community Repositories
 
  .. tab:: FreeBSD
 
- .. warning::
-  FreeBSD ports/packages for Unit may be outdated.
-  For security updates and PHP 8.3+ support,
-  migrating to the latest FreeUnit build is recommended.
+ Recipe: the ``www/unit`` port in
+ `freebsd/freebsd-ports
+ <https://cgit.freebsd.org/ports/tree/www/unit>`_.
 
- To migrate from FreeBSD's Unit packages to FreeUnit:
+ Strategy: create a new slave-free port ``www/freeunit`` and mark the
+ old ``www/unit`` port deprecated with ``MOVED`` redirect.
 
- #. **Remove existing packages**
-
-    .. code-block:: console
-
-     # pkg remove unit libunit unit-php* unit-python* unit-ruby*
-
- #. **Build FreeUnit from source**
+ #. **Copy the port tree**
 
     .. code-block:: console
 
-     # pkg install git openssl pcre2 libxslt
-     # git clone https://github.com/freeunitorg/freeunit
-     # cd freeunit
-     # ./configure --openssl --modules=php:8.4,python:3.13,nodejs:22
-     # make
-     # make install
+     $ cp -R www/unit www/freeunit
+     $ cp -R www/unit-php www/freeunit-php
+     $ cp -R www/unit-python www/freeunit-python
+     # …repeat for perl, ruby, wasm, libunit → libfreeunit
 
- #. **Set up service**
+ #. **Update each Makefile**
+
+    .. code-block:: make
+     :caption: www/freeunit/Makefile
+
+     PORTNAME=    freeunit
+     DISTVERSION= 1.35.3
+     CATEGORIES=  www
+     MAINTAINER=  you@example.org
+     COMMENT=     Dynamic application server, community LTS fork of NGINX Unit
+
+     USE_GITHUB=  yes
+     GH_ACCOUNT=  freeunitorg
+     GH_PROJECT=  freeunit
+
+     CONFLICTS_INSTALL= unit-[0-9]* unit-php-[0-9]* unit-python-[0-9]* unit-perl-[0-9]* unit-ruby-[0-9]* unit-wasm-[0-9]*
+
+ #. **Regenerate distinfo**
 
     .. code-block:: console
 
-     # cp pkg/freebsd/unitd /usr/local/etc/rc.d/
-     # sysrc unitd_enable=YES
-     # service unitd restart
+     $ make makesum
 
- Runtime details:
+ #. **Register the rename in ``MOVED``**
+
+    .. code-block:: text
+
+     www/unit|www/freeunit|2026-04-19|Project renamed to FreeUnit
+
+ #. **Test-build via poudriere, then submit a PR** to
+    `freebsd-ports <https://github.com/freebsd/freebsd-ports>`_.
+
+ Runtime details (unchanged from the legacy ``www/unit`` port):
 
  .. list-table::
 
@@ -251,40 +327,53 @@ Community Repositories
 
  .. tab:: Gentoo
 
- .. warning::
-  Gentoo ebuilds for Unit may be outdated.
-  For security updates and PHP 8.3+ support,
-  migrating to the latest FreeUnit build is recommended.
+ Recipe: ``www-servers/nginx-unit`` in the
+ `::gentoo tree <https://github.com/gentoo/gentoo/tree/master/www-servers/nginx-unit>`_.
 
- To migrate from Gentoo's Unit packages to FreeUnit:
+ Strategy: add ``www-servers/freeunit`` and last-rite ``nginx-unit`` by
+ adding a dated block to ``profiles/package.mask`` (with a 30-day removal
+ notice) once the replacement is stable.
 
- #. **Remove existing package**
-
-    .. code-block:: console
-
-     # emerge --deselect www-servers/unit
-     # emerge --depclean
-
- #. **Build FreeUnit from source**
+ #. **Create the new package directory**
 
     .. code-block:: console
 
-     # emerge dev-vcs/git dev-libs/openssl dev-libs/libpcre2 dev-libs/libxslt
-     # git clone https://github.com/freeunitorg/freeunit
-     # cd freeunit
-     # ./configure --openssl --modules=php:8.4,python:3.13,nodejs:22
-     # make
-     # make install
+     $ git mv www-servers/nginx-unit www-servers/freeunit
+     $ cd www-servers/freeunit
+     $ git mv nginx-unit-1.34.2.ebuild freeunit-1.35.3.ebuild
 
- #. **Set up OpenRC service**
+ #. **Update the ebuild**
+
+    .. code-block:: bash
+     :caption: www-servers/freeunit/freeunit-1.35.3.ebuild
+
+     EAPI=8
+     DESCRIPTION="Dynamic application server, community LTS fork of NGINX Unit"
+     HOMEPAGE="https://freeunit.org/"
+     SRC_URI="https://github.com/freeunitorg/freeunit/archive/refs/tags/${PV}.tar.gz -> ${P}.tar.gz"
+     S="${WORKDIR}/freeunit-${PV}"
+
+     RDEPEND="!!<www-servers/nginx-unit-1.35"   # hard block, forces removal before merge
+
+ #. **Regenerate Manifest**
 
     .. code-block:: console
 
-     # cp pkg/openrc/unit /etc/init.d/
-     # rc-update add unit
-     # rc-service unit restart
+     $ pkgdev manifest
 
- Runtime details:
+ #. **Test**
+
+    .. code-block:: console
+
+     $ sudo ebuild freeunit-1.35.3.ebuild clean merge
+     $ pkgcheck scan
+
+ #. **Submit a PR** to
+    `gentoo/gentoo <https://github.com/gentoo/gentoo>`_
+    per the `Gentoo developer manual
+    <https://devmanual.gentoo.org/>`_.
+
+ Runtime details (unchanged from the legacy ``nginx-unit`` ebuild):
 
  .. list-table::
 
@@ -299,39 +388,51 @@ Community Repositories
 
  .. tab:: NetBSD
 
- .. warning::
-  NetBSD packages for Unit may be outdated.
-  For security updates and PHP 8.3+ support,
-  migrating to the latest FreeUnit build is recommended.
+ Recipe: ``www/unit`` in
+ `pkgsrc <https://github.com/NetBSD/pkgsrc/tree/trunk/www/unit>`_.
 
- To migrate from NetBSD's Unit packages to FreeUnit:
-
- #. **Remove existing packages**
+ #. **Copy the category directory**
 
     .. code-block:: console
 
-     # pkg_delete unit libunit unit-perl unit-python* unit-ruby*
+     $ cd pkgsrc/www
+     $ cp -R unit freeunit
 
- #. **Build FreeUnit from source**
+ #. **Update the Makefile**
+
+    .. code-block:: make
+     :caption: www/freeunit/Makefile
+
+     DISTNAME=       freeunit-1.35.3
+     CATEGORIES=     www
+     MASTER_SITES=   ${MASTER_SITE_GITHUB:=freeunitorg/freeunit/}
+     GITHUB_TAG=     ${PKGVERSION_NOREV}
+     HOMEPAGE=       https://freeunit.org/
+     COMMENT=        Community LTS fork of NGINX Unit
+
+     CONFLICTS+=     unit-[0-9]*
+     SUPERSEDES+=    unit-[0-9]*
+
+    Do the same for ``www/freeunit-perl``, ``www/freeunit-python*``,
+    ``www/freeunit-ruby*``, ``devel/libfreeunit``.
+
+ #. **Regenerate distinfo**
 
     .. code-block:: console
 
-     # pkg_add git openssl pcre2 libxslt
-     # git clone https://github.com/freeunitorg/freeunit
-     # cd freeunit
-     # ./configure --openssl --modules=php:8.4,python:3.13,nodejs:22
-     # make
-     # make install
+     $ make distinfo
 
- #. **Set up service**
+ #. **Test-build**
 
     .. code-block:: console
 
-     # cp pkg/netbsd/unit /etc/rc.d/
-     # echo "unit=YES" >> /etc/rc.conf
-     # service unit restart
+     $ cd www/freeunit && make package
 
- Runtime details:
+ #. **Commit and send-pr** via
+    `pkgsrc-wip <https://pkgsrc.org/wip/>`_ first if the rename needs
+    broader review.
+
+ Runtime details (unchanged from the legacy ``www/unit`` pkgsrc entry):
 
  .. list-table::
 
@@ -346,39 +447,63 @@ Community Repositories
 
  .. tab:: Nix
 
- .. warning::
-  Nix packages for Unit may be outdated.
-  For security updates and PHP 8.3+ support,
-  migrating to the latest FreeUnit build is recommended.
+ Recipe: ``pkgs/servers/http/unit/default.nix`` in
+ `NixOS/nixpkgs <https://github.com/NixOS/nixpkgs>`_.
 
- To migrate from Nix's Unit packages to FreeUnit:
+ The NixOS module also lives at
+ ``nixos/modules/services/web-servers/unit/default.nix`` —
+ keep option names as aliases so existing configurations don't break.
 
- #. **Remove existing package**
-
-    .. code-block:: console
-
-     $ nix-env -e unit
-
- #. **Build FreeUnit from source**
+ #. **Rename the derivation directory**
 
     .. code-block:: console
 
-     $ nix-env -iA nixpkgs.git nixpkgs.openssl nixpkgs.pcre2
-     $ git clone https://github.com/freeunitorg/freeunit
-     $ cd freeunit
-     $ ./configure --openssl --modules=php:8.4,python:3.13,nodejs:22
-     $ make
-     $ sudo make install
+     $ git mv pkgs/servers/http/unit pkgs/servers/http/freeunit
 
- #. **Set up systemd service**
+ #. **Update default.nix**
+
+    .. code-block:: nix
+     :caption: pkgs/servers/http/freeunit/default.nix
+
+     stdenv.mkDerivation (finalAttrs: {
+       pname = "freeunit";
+       version = "1.35.3";
+
+       src = fetchFromGitHub {
+         owner = "freeunitorg";
+         repo  = "freeunit";
+         rev   = finalAttrs.version;
+         hash  = "sha256-...";
+       };
+
+       meta = with lib; {
+         description = "Community LTS fork of NGINX Unit";
+         homepage    = "https://freeunit.org/";
+         license     = licenses.asl20;
+       };
+     })
+
+ #. **Add an alias in ``pkgs/top-level/aliases.nix``**
+
+    .. code-block:: nix
+
+     unit = freeunit;  # renamed 2026-04, remove after 25.11
+
+ #. **Update the NixOS module** to reference ``pkgs.freeunit`` and
+    add a ``mkRenamedOptionModule`` entry for ``services.unit.*`` →
+    ``services.freeunit.*``.
+
+ #. **Refresh the hash and build**
 
     .. code-block:: console
 
-     # cp pkg/systemd/unit.service /etc/systemd/system/
-     # systemctl daemon-reload
-     # systemctl enable --now unit
+     $ nix-prefetch-github --rev 1.35.3 freeunitorg freeunit  # writes SRI hash for fetchFromGitHub (unpacked)
+     $ nix-build -A freeunit
+     $ nixos-rebuild build-vm -I nixpkgs=.
 
- Runtime details:
+ #. **Submit a PR** to nixpkgs.
+
+ Runtime details (unchanged from the legacy ``unit`` derivation):
 
  .. list-table::
 
@@ -393,39 +518,59 @@ Community Repositories
 
  .. tab:: OpenBSD
 
- .. warning::
-  OpenBSD packages/ports for Unit may be outdated.
-  For security updates and PHP 8.3+ support,
-  migrating to the latest FreeUnit build is recommended.
+ Recipe: ``www/unit`` in the
+ `OpenBSD ports tree
+ <https://github.com/openbsd/ports/tree/master/www/unit>`_.
 
- To migrate from OpenBSD's Unit packages to FreeUnit:
-
- #. **Remove existing packages**
+ #. **Create the new port**
 
     .. code-block:: console
 
-     # pkg_delete unit unit-perl unit-php* unit-python unit-ruby
+     $ cd /usr/ports/www
+     $ cp -R unit freeunit
 
- #. **Build FreeUnit from source**
+ #. **Update the Makefile**
+
+    .. code-block:: make
+     :caption: www/freeunit/Makefile
+
+     COMMENT =       community LTS fork of NGINX Unit
+     GH_ACCOUNT =    freeunitorg
+     GH_PROJECT =    freeunit
+     GH_TAGNAME =    1.35.3
+     DISTNAME =      freeunit-${GH_TAGNAME}
+     PKGNAME =       freeunit-${GH_TAGNAME}
+
+     PSEUDO_FLAVORS = no_nonfree
+     FLAVORS =        php python ruby perl
+
+    Subpackage ``PKGNAME``s follow: ``freeunit-php``, ``freeunit-python``,
+    ``freeunit-perl``, ``freeunit-ruby``.
+
+ #. **Regenerate distinfo**
 
     .. code-block:: console
 
-     # pkg_add git openssl pcre2 libxslt
-     # git clone https://github.com/freeunitorg/freeunit
-     # cd freeunit
-     # ./configure --openssl --modules=php:8.4,python:3.13,nodejs:22
-     # make
-     # make install
+     $ cd /usr/ports/www/freeunit && make makesum
 
- #. **Set up rcctl service**
+ #. **Record the rename for ``pkg_add -u``**
 
-    .. code-block:: console
+    OpenBSD has no ports-wide ``MOVED`` file. Instead, add the old
+    pkgstem as an ``@pkgpath`` line in the new port's ``pkg/PLIST``
+    so :program:`pkg_add -u` auto-upgrades ``unit-*`` installs:
 
-     # cp pkg/openbsd/unit /etc/rc.d/
-     # rcctl enable unit
-     # rcctl restart unit
+    .. code-block:: text
+     :caption: www/freeunit/pkg/PLIST
 
- Runtime details:
+     @pkgpath www/unit
+     @pkgpath www/unit,-main
+
+ #. **Test-build and submit the diff** to
+    `ports@openbsd.org <mailto:ports@openbsd.org>`_
+    per the `OpenBSD porter's handbook
+    <https://www.openbsd.org/faq/ports/>`_.
+
+ Runtime details (unchanged from the legacy ``www/unit`` port):
 
  .. list-table::
 
@@ -440,60 +585,67 @@ Community Repositories
 
  .. tab:: Remi's RPM
 
- .. warning::
-  Remi's repository may provide outdated Unit packages.
-  For security updates and PHP 8.3+ support,
-  migrating to the latest FreeUnit build is recommended.
+ Recipe: Remi Collet builds from his own infrastructure — see
+ `blog.remirepo.net <https://blog.remirepo.net/>`_ for the canonical
+ spec tree and contact path. Coordinate the rename with Remi directly
+ rather than opening a PR to the GitHub mirror.
 
- To migrate from Remi's Unit packages to FreeUnit:
+ The core package gets renamed; the PHP modules (``phpXX-unit-php``)
+ stay as-is — they are ABI-compatible with FreeUnit and Remi's naming
+ scheme is valuable to existing users.
 
- #. **Keep Remi's PHP packages** (optional but recommended)
+ #. **Fork the spec to ``freeunit.spec``**
 
-    FreeUnit's core is fully compatible with Remi's
-    ``phpXX-unit-php`` modules. You can continue using Remi
-    for PHP runtime packages while running FreeUnit as the core.
+    .. code-block:: spec
+     :caption: freeunit.spec
 
- #. **Disable Unit from Remi's repo**
+     %global         gh_owner   freeunitorg
+     %global         gh_project freeunit
 
-    Prevent conflicts by excluding Unit packages from Remi:
+     Name:           freeunit
+     Version:        1.35.3
+     Release:        1%{?dist}
+     Summary:        Community LTS fork of NGINX Unit
+     URL:            https://freeunit.org/
+     Source0:        https://github.com/%{gh_owner}/%{gh_project}/archive/refs/tags/%{version}.tar.gz
 
-    .. code-block:: ini
-     :caption: /etc/yum.repos.d/remi.repo
+     Provides:       unit = %{version}-%{release}
+     Obsoletes:      unit < %{version}-%{release}
 
-     [remi]
-     name=Remi's RPM repository
-     ...
-     exclude=unit*
+     %prep
+     %autosetup -n %{gh_project}-%{version}
 
- #. **Build FreeUnit core**
+    Leave ``--prefix=/usr`` in ``%configure`` so paths stay at
+    ``/usr/sbin/unitd`` and ``/usr/lib64/unit/modules/`` for drop-in
+    compatibility with ``phpXX-unit-php``.
+
+ #. **Update ``phpXX-unit-php`` sub-specs**
+
+    No rename required — only bump their
+    ``BuildRequires: freeunit-devel >= %{version}`` /
+    ``Requires: freeunit >= %{version}`` lines so they link against
+    the renamed core.
+
+ #. **Build and hand the SRPM to Remi**
 
     .. code-block:: console
 
-     # yum install git openssl-devel pcre2-devel libxslt-devel
-     # git clone https://github.com/freeunitorg/freeunit
-     # cd freeunit
-     # ./configure --openssl --prefix=/usr --modules=php:8.4,python:3.13
-     # make
-     # make install
+     $ rpmbuild -ba freeunit.spec
 
-    .. note::
-     Using ``--prefix=/usr`` ensures paths match Remi's package layout
-     (``/usr/sbin/unitd``, ``/usr/lib64/unit/modules/``, etc.).
+    The upload path into ``rpms.remirepo.net`` is Remi-internal —
+    don't invent one. Send the resulting SRPM to Remi via the contact
+    on `blog.remirepo.net <https://blog.remirepo.net/>`_ for repo
+    ingestion.
 
- #. **Verify the installation**
+ #. **Verify the upgrade path**
 
     .. code-block:: console
 
+     # dnf upgrade freeunit
      # /usr/sbin/unitd --version
-     freeunit/X.Y.Z   # Example format; actual version may differ
+     freeunit/1.35.3
 
- #. **Restart FreeUnit**
-
-    .. code-block:: console
-
-     # systemctl restart unit
-
- Runtime details:
+ Runtime details (unchanged from the legacy ``unit`` RPM):
 
  .. list-table::
 
@@ -520,44 +672,80 @@ FreeUnit provides official Docker images for easy deployment.
 Steps
 ====
 
-#. **Use FreeUnit's official image**
+#. **Pick a tag and reference it**
+
+ Images are hosted on GitHub Container Registry (GHCR):
+ https://github.com/freeunitorg/freeunit/pkgs/container/freeunit
+
+ Tag format: :samp:`{VERSION}-{VARIANT}` (pinned) or
+ :samp:`latest-{VARIANT}` (rolling). There is **no bare** ``latest`` tag.
+
+ .. list-table::
+  :header-rows: 1
+  :widths: 35 65
+
+  * - Variant
+    - Description
+
+  * - ``minimal``
+    - No language modules. Base for custom images.
+
+  * - ``wasm``
+    - WebAssembly Components (WASI 0.2) via Wasmtime.
+
+  * - ``go1.24`` ``go1.25`` ``go1.26``
+    - Go (single-version images).
+
+  * - ``jsc17`` ``jsc21``
+    - Java (Eclipse Temurin OpenJDK LTS). Runs ``.war``/``.jsp`` apps.
+
+  * - ``node20`` ``node22`` ``node24``
+    - Node.js (single-version images).
+
+  * - ``perl5.38`` ``perl5.40``
+    - Perl (single-version images).
+
+  * - ``php8.3`` ``php8.4`` ``php8.5``
+    - PHP (single-version images).
+
+  * - ``python3.12`` ``python3.12-slim``
+    - Python 3.12, full and slim.
+
+  * - ``python3.13`` ``python3.13-slim``
+    - Python 3.13, full and slim.
+
+  * - ``python3.14`` ``python3.14-slim``
+    - Python 3.14, full and slim.
+
+  * - ``ruby3.3`` ``ruby3.4``
+    - Ruby (single-version images).
+
+ Each tag is available for both ``amd64`` and ``arm64`` architectures
+ via a multi-arch manifest.
+
+ .. note::
+  **Language version support policy:** FreeUnit supports each language
+  variant for **1 year after the upstream language EOL**.
+  When a variant is retired, it is removed from the matrix and noted
+  in ``CHANGES.txt``. EOL dates: https://endoflife.date
 
  Reference the image in your ``Dockerfile`` or ``docker-compose.yml``:
 
  .. code-block:: docker
-  :caption: Example usage
+  :caption: Example — pinning PHP 8.4
 
-  FROM ghcr.io/freeunitorg/freeunit:latest
+  FROM ghcr.io/freeunitorg/freeunit:1.35.3-php8.4
 
- .. note::
-  FreeUnit images are hosted on GitHub Container Registry:
-  https://github.com/freeunitorg/freeunit/pkgs/container/freeunit
+ .. code-block:: docker
+  :caption: Example — rolling latest Python 3.13
 
-  Available tags:
-
-  - ``latest`` — Full-featured image with all language modules
-  - ``minimal`` — Base image without language modules
-  - ``php`` — PHP-only variant
-  - ``python`` — Python-only variant
-  - ``nodejs`` — Node.js-only variant
-  - ``go`` — Go-only variant
-  - ``ruby`` — Ruby-only variant
-  - ``perl`` — Perl-only variant
-  - ``wasm`` — WebAssembly (WASI 0.2) support
-
-  Version-pinned tags (examples):
-  - ``1.35.3``, ``1.35``, ``1`` — Core version only
-  - ``1.35.3-php``, ``1.35-php`` — PHP variant with version pin
-  - ``1.35.3-python``, ``1.35-python`` — Python variant
-
-  Each tag is available for both ``amd64`` and ``arm64`` architectures.
-  Multi-arch manifests are automatically created on release.
+  FROM ghcr.io/freeunitorg/freeunit:latest-python3.13
 
 #. **Verify the image**
 
  .. code-block:: console
 
-  $ docker run --rm ghcr.io/freeunitorg/freeunit:latest unitd --version
+  $ docker run --rm ghcr.io/freeunitorg/freeunit:latest-minimal unitd --version
   freeunit/X.Y.Z   # Example format; actual version may differ
 
  .. note::
@@ -823,7 +1011,7 @@ If you need to revert to the previous setup:
 
    .. code-block:: docker
 
-    FROM ghcr.io/freeunitorg/freeunit:1.35.0   # Previous pinned version
+    FROM ghcr.io/freeunitorg/freeunit:1.35.0-php8.4   # Previous pinned version; replace variant to match your image
 
    Then redeploy:
 
