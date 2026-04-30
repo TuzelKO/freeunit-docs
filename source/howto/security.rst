@@ -763,6 +763,63 @@ disk space.
       ACLs.
 
 
+.. _security-seccomp-docker:
+
+*******************************
+Docker: Seccomp Profile (AF_ALG)
+*******************************
+
+**Rationale**: CVE-2026-31431 is a local privilege escalation in the Linux
+kernel ``algif_aead`` component, reachable via the ``AF_ALG`` socket interface
+(domain 38).  It affects kernels 4.14 and later and requires only local user
+access — including from within a container.  FreeUnit images ship a seccomp
+profile that blocks ``socket(AF_ALG, ...)`` at the kernel level regardless of
+whether the host kernel is patched.
+
+**Actions**: Pass the bundled profile at ``docker run`` time:
+
+.. code-block:: console
+
+   # docker run --security-opt seccomp=pkg/docker/seccomp-no-af-alg.json \
+         ghcr.io/freeunitorg/freeunit:latest-php8.4
+
+The profile is also included inside every image at
+``/usr/share/unit/seccomp-no-af-alg.json`` for reference.  To extract it
+without cloning the repository:
+
+.. code-block:: console
+
+   # CNAME=$(docker create ghcr.io/freeunitorg/freeunit:latest-minimal)
+   # docker cp "$CNAME":/usr/share/unit/seccomp-no-af-alg.json ./seccomp-no-af-alg.json
+   # docker rm "$CNAME"
+   # docker run --security-opt seccomp=./seccomp-no-af-alg.json \
+         ghcr.io/freeunitorg/freeunit:latest-php8.4
+
+.. note::
+
+   The profile uses ``defaultAction: SCMP_ACT_ALLOW`` with explicit deny
+   rules for AF_ALG (38) and TIPC (40).  This is intentional: libseccomp
+   ORs multiple ``NE`` conditions on the same argument index, making an
+   ``SCMP_ACT_ERRNO``-default approach unreliable for this use case.
+
+**Host-level workaround** (unpatched kernels, applies outside Docker too):
+
+.. code-block:: console
+
+   # echo "install algif_aead /bin/false" > /etc/modprobe.d/disable-algif.conf
+   # rmmod algif_aead 2>/dev/null || true
+
+**Verify** the profile is active (AF_ALG socket must be denied):
+
+.. code-block:: console
+
+   # docker run --rm \
+         --security-opt seccomp=pkg/docker/seccomp-no-af-alg.json \
+         ghcr.io/freeunitorg/freeunit:latest-minimal \
+         python3 -c "import socket; socket.socket(socket.AF_ALG, socket.SOCK_SEQPACKET)"
+   # Expected: PermissionError: [Errno 1] Operation not permitted
+
+
 .. _security-isolation:
 
 ***************************

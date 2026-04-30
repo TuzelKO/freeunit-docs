@@ -7,6 +7,15 @@ News archive for the year 2026.
 
 .. nxt_news_entry::
    :author: FreeUnit Team
+   :description: Fix router CPU spin and connection hang under port scanning
+                 load; reduce default HTTP keep-alive idle_timeout to 30s.
+   :email: team@freeunit.org
+   :title: Unit 1.35.4 Released
+   :url: news/2026/unit-1.35.4-released
+   :date: 2026-04-30
+
+.. nxt_news_entry::
+   :author: FreeUnit Team
    :description: Migrate contrib mirror to packages.freeunit.org; upgrade njs
                  to 0.9.6, libunit-wasm to 0.5.0, wasmtime to 43; add Java 17
                  and 21; eliminate QEMU for ARM64 CI builds; bump Rust to 1.94.1.
