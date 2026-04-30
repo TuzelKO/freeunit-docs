@@ -5511,7 +5511,7 @@ In turn, the **http** option exposes the following settings:
         Unit returns a 408 "Request Timeout" response
         and closes the connection.
 
-        The default is 180.
+        The default is 30.
 
     * - **log_route**
       - Boolean;
